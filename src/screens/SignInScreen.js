@@ -13,6 +13,10 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuth, signIn } from "../store/reducers/AuthSlice";
+import { auth } from "../../config/firebase";
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()
@@ -23,8 +27,46 @@ const SignupSchema = Yup.object().shape({
     .required("Please enter your password"),
 });
 
-export default function SignInScreen() {
+export default function SignInScreen({ route }) {
+  const { promptAsync } = route.params;
+
+  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const userId = useSelector(selectAuth);
+
+  // const signIn = async (data) => {
+  //   const { email, password } = data;
+
+  //   await signInWithEmailAndPassword(auth, email, password)
+  //     .then(async (userCredential) => {
+  //       console.log("sign in", userCredential._tokenResponse.idToken);
+  //       dispatch(signIn(userCredential._tokenResponse.idToken));
+  //       // await AsyncStorage.setItem(
+  //       //   "@user",
+  //       //   JSON.stringify(userCredential._tokenResponse.idToken)
+  //       // );
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
+
+  const signInFunc = async (data) => {
+    const { email, password } = data;
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("sign in", userCredential._tokenResponse.idToken);
+      console.log("Sign in Auth ", userId);
+      dispatch(signIn(userCredential._tokenResponse.idToken));
+    } catch (err) {
+      alert(err);
+    }
+  };
 
   return (
     <View className="bg-white flex-1 ">
@@ -47,7 +89,7 @@ export default function SignInScreen() {
           //   }
           //   return errors;
           // }}
-          onSubmit={(values) => signIn(values)}
+          onSubmit={(data) => signInFunc(data)}
           validationSchema={SignupSchema}
         >
           {({
@@ -128,7 +170,10 @@ export default function SignInScreen() {
         <Text className="text-lg my-3">or</Text>
 
         <View className="w-full">
-          <Pressable className="border flex-row items-center justify-center w-full border-gray-500 p-3 rounded-[24px] mt-3">
+          <Pressable
+            onPress={() => promptAsync()}
+            className="border flex-row items-center justify-center w-full border-gray-500 p-3 rounded-[24px] mt-3"
+          >
             <Image
               source={require("./../../assets/google-logo.png")}
               className="w-[30] h-[30] mr-3"

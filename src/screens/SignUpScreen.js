@@ -7,30 +7,23 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { auth, googleProvider } from "../../config/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuth, signIn } from "../store/reducers/AuthSlice";
+import LanguageSelectorModal from "./../modals/LanguageSelectorModal";
 
-const signIn = async (data) => {
-  try {
-    const { email, password } = data;
-
-    await createUserWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const signInWithGoogle = async () => {
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    console.log(error);
-  }
-};
+// const signInWithGoogle = async () => {
+//   try {
+//     await signInWithPopup(auth, googleProvider);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 console.log(auth?.currentUser);
 
@@ -47,8 +40,41 @@ const SignupSchema = Yup.object().shape({
     .required("Confirm Password is required"),
 });
 
-export default function SignUpScreen() {
+export default function SignUpScreen({ route }) {
+  const { promptAsync } = route.params;
+
+  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const userId = useSelector(selectAuth);
+  const [yourLanguage, setYourLanguage] = useState(null);
+
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  // toggle Modal
+  const toggleModal = (modalSetter) => {
+    modalSetter((prev) => !prev);
+  };
+
+  const signUp = async (data) => {
+    const { email, password } = data;
+    try {
+      await createUserWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
+          console.log("sign up", userCredential._tokenResponse.idToken);
+          console.log("Sign in Auth ", userId);
+          dispatch(signIn(userCredential._tokenResponse.idToken));
+          // await AsyncStorage.setItem(
+          //   "@user",
+          // JSON.stringify(userCredenti/al._tokenResponse.idToken)
+          // );
+        })
+        .catch((err) => {
+          alert(err);
+        });
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   return (
     <View className="bg-white flex-1 ">
@@ -61,7 +87,7 @@ export default function SignUpScreen() {
         {/* Formik  */}
         <Formik
           initialValues={{ email: "", password: "" }}
-          onSubmit={(values) => signIn(values)}
+          onSubmit={(values) => signUp(values)}
           validationSchema={SignupSchema}
         >
           {({
@@ -77,7 +103,7 @@ export default function SignUpScreen() {
             <View className="w-full">
               <View className="border w-full border-gray-500 p-3 rounded-[24px] mt-5">
                 <TextInput
-                  autoCapitalize={false}
+                  // autoCapitalize={false}
                   onChangeText={handleChange("email")}
                   onBlur={() => setFieldTouched("email")}
                   value={values.email}
@@ -90,9 +116,21 @@ export default function SignUpScreen() {
                 </View>
               )}
 
+              {/* Language */}
+              <Pressable
+                onPress={() => toggleModal(setModalVisible)}
+                className="border w-full border-gray-500 p-4 rounded-[24px] mt-5"
+              >
+                <Text className="ml-2 ">
+                  {yourLanguage === null
+                    ? "Select your language"
+                    : `${yourLanguage.name}`}
+                </Text>
+              </Pressable>
+
               <View className="border w-full border-gray-500 p-3 rounded-[24px] mt-5">
                 <TextInput
-                  autoCapitalize={false}
+                  // autoCapitalize={false}
                   onChangeText={handleChange("password")}
                   onBlur={() => setFieldTouched("password")}
                   value={values.password}
@@ -107,7 +145,7 @@ export default function SignUpScreen() {
 
               <View className="border w-full border-gray-500 p-3 rounded-[24px] mt-5">
                 <TextInput
-                  autoCapitalize={false}
+                  // autoCapitalize={false}
                   onChangeText={handleChange("confirmPassword")}
                   onBlur={() => setFieldTouched("confirmPassword")}
                   value={values.confirmPassword}
@@ -149,7 +187,7 @@ export default function SignUpScreen() {
 
         <View className="w-full">
           <Pressable
-            onPress={() => signInWithGoogle()}
+            onPress={() => promptAsync()}
             className="border flex-row items-center justify-center w-full border-gray-500 p-3 rounded-[24px] mt-3"
           >
             <Image
@@ -168,6 +206,13 @@ export default function SignUpScreen() {
           <Text className="font-medium text-[#1e6aca] font-bold"> Sign In</Text>
         </Pressable>
       </View>
+
+      <LanguageSelectorModal
+        isModalVisible={isModalVisible}
+        toggleModal={() => toggleModal(setModalVisible)}
+        language={yourLanguage}
+        setLanguage={setYourLanguage}
+      />
     </View>
   );
 }

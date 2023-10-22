@@ -2,7 +2,6 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import React, { useRef, useState } from "react";
 import Modal from "react-native-modal";
 import { useDispatch, useSelector } from "react-redux";
-import { nanoid } from "@reduxjs/toolkit";
 import { addCategory, selectCategory } from "../store/reducers/CategorySlice";
 
 export default function AddCategoryModal({ isModalVisible, toggleModal }) {

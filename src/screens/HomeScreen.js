@@ -16,14 +16,17 @@ import RecentVocab from "../components/RecentVocab";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategory, selectCategory } from "../store/reducers/CategorySlice";
 import { getVocab, selectVocab } from "../store/reducers/VocabSlice";
+import { selectAuth } from "../store/reducers/AuthSlice";
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
   const category = useSelector(selectCategory);
   const data = useSelector(selectVocab);
+  const auth = useSelector(selectAuth);
   const vocabData = data.data;
   const moreCategory = category.data.length > 3;
 
+  console.log("Home", auth);
   useLayoutEffect(() => {
     dispatch(getCategory());
     dispatch(getVocab());
