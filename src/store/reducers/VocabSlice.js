@@ -14,7 +14,6 @@ const initialState = {
   loading: "idle",
   error: null,
 };
-
 // add vocab
 export const addVocabulary = createAsyncThunk(
   "addVocabulary",

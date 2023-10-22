@@ -6,20 +6,19 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   StatusBar,
+  TouchableOpacity,
 } from "react-native";
 import React, { useState } from "react";
 import { Entypo } from "@expo/vector-icons";
 import { SelectList } from "react-native-dropdown-select-list";
-import Modal from "react-native-modal";
-import AddCategoryModal from "./AddCategoryModal";
+import AddCategoryModal from "../modals/AddCategoryModal";
 import { selectCategory } from "../store/reducers/CategorySlice";
 import { useDispatch, useSelector } from "react-redux";
-import { addVocabulary, selectVocab } from "../store/reducers/VocabSlice";
-import LanguageSelectorModal from "./LanguageSelectorModal";
+import { addVocabulary, selectVocab } from "./../store/reducers/VocabSlice";
+import LanguageSelectorModal from "../modals/LanguageSelectorModal";
 
-export default function AddWordModal({ setModalVisible, isModalVisible }) {
+export default function AddWordScreen() {
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [sin, setSin] = useState("");
   const [def, setDef] = useState(null);
   const [userId, setUserId] = useState("0002");
   const [language1, setLanguage1] = useState({ id: 2, name: "sinhala" });
@@ -29,15 +28,9 @@ export default function AddWordModal({ setModalVisible, isModalVisible }) {
   const today = new Date();
   const formattedDate = today.toISOString().split("T")[0];
 
-  // console.log(today);
-
   const Category = useSelector(selectCategory);
   const Vocab = useSelector(selectVocab);
-  const vocabReverse = [...Vocab.data];
-  vocabReverse.reverse();
-
-  // console.log( parseFloat(vocabReverse[vocabReverse.length - 1].id));
-
+  const vocabReverse = [...Vocab.data].reverse();
   const Categories = Category.data;
 
   const data = Categories.map((category, index) => ({
@@ -45,122 +38,101 @@ export default function AddWordModal({ setModalVisible, isModalVisible }) {
     value: category.name,
   }));
 
-  // const data = [
-  //   {
-  //     key: 1,
-  //     value: "dsajh",
-  //   },
-  //   {
-  //     key: 2,
-  //     value: "adgf",
-  //   },
-  //   {
-  //     key: 3,
-  //     value: "sdgf",
-  //   },
-  // ];
-
-  // console.log("data", data);
-
-  // Modal visible
-  const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [isLanguageModalVisible, setLanguageModalVisible] = useState(false);
-
   const dispatch = useDispatch();
 
   const addVocabFunc = () => {
+    const newId = parseFloat(vocabReverse[0].id) + 1;
     dispatch(
       addVocabulary({
-        id: parseFloat(vocabReverse[vocabReverse.length - 1].id) + 1,
-        userId: userId,
+        id: newId,
+        userId,
         sin: language1Input,
         eng: language2Input,
         date: formattedDate,
         category: selectedCategory,
-        def: def,
+        def,
         save: false,
       })
     );
-    setModalVisible(!isModalVisible);
-    // console.log({
-    //   id: nanoid(),
-    //   language1Input: language1Input,
-    //   sin: sin,
-    //   date: today,
-    //   category: selectedCategory,
-    //   def: def,
-    //   save: false,
-    // });
+    setModalVisible(false);
   };
 
-  // Modal visible functions
-  const toggleModalCategory = () => {
-    setCategoryModalVisible(!isCategoryModalVisible);
+  const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [isLanguageModalVisible1, setLanguageModalVisible1] = useState(false);
+  const [isLanguageModalVisible2, setLanguageModalVisible2] = useState(false);
+
+  const toggleModal = (modalSetter) => {
+    modalSetter((prev) => !prev);
   };
-  const toggleModalLanguage = () => {
-    setLanguageModalVisible(!isLanguageModalVisible);
+
+  const languageChangeFunc = () => {
+    setLanguage1(language2);
+    setLanguage2(language1);
   };
 
   return (
-    <Modal
-      isVisible={isModalVisible}
-      onBackdropPress={() => setModalVisible(false)}
-    >
+    <View className="p-3 flex-1">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      <KeyboardAvoidingView className=" bg-white pt-3 rounded-[24px]">
+      <KeyboardAvoidingView className="flex-1 bg-white pt-3 rounded-[24px]">
         <ScrollView>
           <Text className="text-lg px-5 pb-2 font-semibold">
             Add a new word
           </Text>
           <View className="flex-row justify-evenly items-center">
-            <Pressable
-              onPress={() => toggleModalLanguage()}
-              className=" active:bg-[#ffffff] items-center bg-[#f0f0f0] w-[130px] p-4 rounded-[24px]"
+            <TouchableOpacity
+              onPress={() => toggleModal(setLanguageModalVisible1)}
+              className="active:bg-[#ffffff] items-center bg-[#f0f0f0] w-[130px] p-4 rounded-[24px]"
             >
               <Text>{language1.name}</Text>
-            </Pressable>
+            </TouchableOpacity>
 
-            <Entypo name="swap" size={24} color="black" />
-            <Pressable className=" items-center bg-[#f0f0f0] w-[130px] p-4 rounded-[24px]">
+            <TouchableOpacity onPress={() => languageChangeFunc()}>
+              <Entypo name="swap" size={24} color="black" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => toggleModal(setLanguageModalVisible2)}
+              className="items-center bg-[#f0f0f0] w-[130px] p-4 rounded-[24px]"
+            >
               <Text>{language2.name}</Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
 
           <View className="p-4">
             <View className="border border-gray-500 p-3 rounded-[24px] mt-3">
               <TextInput
-                placeholder="Sinhala Word"
+                placeholder={`${language1.name} Word`}
                 onChangeText={(text) => setLanguage1Input(text)}
               />
             </View>
-            <View className="border flex-row items-center justify-between border-gray-500 p-3 rounded-[24px]  mt-3">
+            <View className="border flex-row items-center justify-between border-gray-500 p-3 rounded-[24px] mt-3">
               <TextInput
                 onChangeText={(text) => setLanguage2Input(text)}
-                placeholder="English Meaning"
-                style={{ width: 220 }}
+                placeholder={`${language2.name} Meaning`}
+                style={{ width: 200 }}
               />
-              <Pressable onPress={() => console.log("Translate")}>
-                <Text className="text-[16px] font-semibold text-[#1e6aca] ">
+              <Pressable
+                className="bg-[#1e6aca] p-1 rounded-[24px] px-3"
+                onPress={() => console.log("Translate")}
+              >
+                <Text className="text-[16px] font-semibold text-white">
                   Translate
                 </Text>
               </Pressable>
             </View>
 
-            <Text className=" text-[16px] my-3 font-medium">
+            <Text className="text-[16px] my-3 font-medium">
               Select Category
             </Text>
 
             <SelectList
-              setSelected={(val) => setSelectedCategory(val)}
+              setSelected={setSelectedCategory}
               data={data}
               save="value"
-              // onSelect={() => {
-              //   selectedCategory == "Add Category" && toggleModal();
-              // }}
             />
 
-            <View className="border border-gray-500 p-3 rounded-[24px]  mt-3">
+            <View className="border border-gray-500 p-3 rounded-[24px] mt-3">
               <TextInput
                 onChangeText={(text) => setDef(text)}
                 textAlignVertical="top"
@@ -175,14 +147,14 @@ export default function AddWordModal({ setModalVisible, isModalVisible }) {
                 onPress={() => setModalVisible(false)}
                 className="flex-1 bg-white border border-gray-500 items-center justify-center p-4 mt-4 rounded-[24px] mr-4"
               >
-                <Text className="text-Black text-[14px] ">Cancel</Text>
+                <Text className="text-Black text-[14px]">Cancel</Text>
               </Pressable>
 
               <Pressable
                 onPress={() => addVocabFunc()}
                 className="flex-1 bg-[#1e6aca] items-center justify-center p-4 mt-4 rounded-[24px]"
               >
-                <Text className="text-white text-[14px] ">Add Word</Text>
+                <Text className="text-white text-[14px]">Add Word</Text>
               </Pressable>
             </View>
           </View>
@@ -190,16 +162,24 @@ export default function AddWordModal({ setModalVisible, isModalVisible }) {
       </KeyboardAvoidingView>
       <AddCategoryModal
         isModalVisible={isCategoryModalVisible}
-        toggleModal={toggleModalCategory}
+        toggleModal={() => toggleModal(setCategoryModalVisible)}
       />
-
-      {/* set languages */}
       <LanguageSelectorModal
-        isModalVisible={isLanguageModalVisible}
-        toggleModal={toggleModalLanguage}
+        isModalVisible={isLanguageModalVisible1}
+        toggleModal={() => toggleModal(setLanguageModalVisible1)}
         language={language1}
+        languageSelected={language2}
+        setLanguageSelected={setLanguage2}
         setLanguage={setLanguage1}
       />
-    </Modal>
+      <LanguageSelectorModal
+        isModalVisible={isLanguageModalVisible2}
+        toggleModal={() => toggleModal(setLanguageModalVisible2)}
+        language={language2}
+        languageSelected={language1}
+        setLanguageSelected={setLanguage1}
+        setLanguage={setLanguage2}
+      />
+    </View>
   );
 }

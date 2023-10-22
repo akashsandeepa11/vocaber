@@ -1,19 +1,6 @@
-import {
-  View,
-  Text,
-  StatusBar,
-  Pressable,
-  Touchable,
-  TouchableWithoutFeedback,
-} from "react-native";
-import React, { useState } from "react";
-import {
-  NavigationContainer,
-  createNavigationContainerRef,
-  useNavigation,
-} from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "./src/screens/HomeScreen";
+import { View, Pressable } from "react-native";
+import React from "react";
+import HomeScreen from "../screens/HomeScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Entypo,
@@ -21,22 +8,18 @@ import {
   FontAwesome5,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import VocabListScreen from "./src/screens/VocabListScreen";
-import ProfileScreen from "./src/screens/ProfileScreen";
-import Modal from "react-native-modal";
-import AddButton from "./src/components/AddButton";
-import QuizCategoryScreen from "./src/screens/QuizCategoryScreen";
-import QuizzesScreen from "./src/screens/QuizzesScreen";
-import SignInScreen from "./src/screens/SignInScreen";
-import SignUpScreen from "./src/screens/SignUpScreen";
-import CategoryScreen from "./src/screens/CategoryScreen";
+import VocabListScreen from "../store/VocabListScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import AddWordScreen from "../screens/AddWordScreen";
+// import AddButton from "../components/AddButton";
+import QuizCategoryScreen from "../screens/QuizCategoryScreen";
 
 const NullScreen = () => null;
 
 // Bottom tab
 const Tab = createBottomTabNavigator();
 
-function TabGroup() {
+export default function BottomTabNavigation() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -88,14 +71,30 @@ function TabGroup() {
         }}
       />
       <Tab.Screen
-        name="NullScreen"
-        component={NullScreen}
+        name="Add Word"
+        component={AddWordScreen}
         options={{
           tabBarIcon: ({ focused }) => {
             return (
-              <Pressable>
-                <AddButton />
-              </Pressable>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#1e6aca",
+                  width: Platform.OS == "ios" ? 50 : 60,
+                  height: Platform.OS == "ios" ? 50 : 60,
+                  top: Platform.OS == "ios" ? -10 : -20,
+                  borderRadius: Platform.OS == "ios" ? 25 : 30,
+                }}
+              >
+                <View>
+                  <Entypo name="plus" size={42} color="white" />
+                </View>
+              </View>
+
+              // <Pressable>
+              //   <AddButton />
+              // </Pressable>
             );
           },
         }}
@@ -132,50 +131,5 @@ function TabGroup() {
         }}
       />
     </Tab.Navigator>
-  );
-}
-
-// Stack
-
-const Stack = createNativeStackNavigator();
-
-function StackGroup() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        options={{ headerShown: false }}
-        name="TabGroup"
-        component={TabGroup}
-      />
-      <Stack.Screen
-        // options={{ headerShown: false }}
-        name="QuizzesScreen"
-        component={QuizzesScreen}
-      />
-      <Stack.Screen
-        // options={{ headerShown: false }}
-        name="CategoryScreen"
-        component={CategoryScreen}
-      />
-      <Stack.Screen
-        options={{ headerShown: false }}
-        name="SignIn"
-        component={SignInScreen}
-      />
-      <Stack.Screen
-        options={{ headerShown: false }}
-        name="SignUp"
-        component={SignUpScreen}
-      />
-    </Stack.Navigator>
-  );
-}
-
-export default function Navigate() {
-  return (
-    <NavigationContainer>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-      <StackGroup />
-    </NavigationContainer>
   );
 }

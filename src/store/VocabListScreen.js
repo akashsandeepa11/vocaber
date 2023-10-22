@@ -33,16 +33,13 @@ export default function VocabListScreen() {
   }
 
   return (
-    <View className="flex-1 ">
+    <View className="flex-1">
       <StatusBar backgroundColor="white" barStyle="dark-content" />
       <DatePickerComp Date={date} setDate={setDate} today={today} />
-
-      <View className="mx-10">
-        <Vocab
-          vocabData={vocabData}
-          filterValue={{ name: formatDate(date), type: "date" }}
-        />
-      </View>
+      <Vocab
+        vocabData={vocabData}
+        filterValue={{ name: formatDate(date), type: "date" }}
+      />
     </View>
   );
 }
